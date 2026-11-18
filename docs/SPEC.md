@@ -20,9 +20,12 @@ Roadmaps are capital allocation in disguise. Teams rank epics by gut or RICE and
 - [ ] Sentry wired in from the first deploy (per build rules)
 
 ## Scope: winning layer (pick ONE before 1 Dec)
-1. **Rovo agent "Desk Analyst":** reads epic descriptions, linked issues and history, proposes p and effort with a rationale, and flags overconfident estimates. Targets the Best Rovo Agent bonus. *Recommended: it's the most visible AI story.*
+1. **Rovo agent "Desk Analyst":** reads epic descriptions, linked issues and history, proposes p and effort with a rationale, and flags overconfident estimates. Targets the Best Rovo Agent bonus. **Built 18 Nov (not yet deployed):** `rovo:agent` + `read-desk` (GET) and `save-estimate` (UPDATE) actions; estimate flags (overconfident, long-shot, negative-edge, concentration) shown in the UI and given to the agent; agent-made estimates stored with their rationale and marked 🤖 in the table.
 2. **Calibration loop:** when epics close, record hit/miss vs the p estimate, and show each estimator's Brier score. This is the differentiator a finance mind brings.
 3. **Efficient frontier chart:** sweep λ and plot EV vs σ of the funded portfolio.
+
+## Cheap extra bonus
+- `rovo:mcp` module exposing `read-desk` as an MCP tool (Best MCP App bonus): a manifest-only change once the agent works on a live site.
 
 ## Out of scope
 Correlated bets, multi-project portfolios, Monte Carlo, Marketplace listing (revisit after submission).

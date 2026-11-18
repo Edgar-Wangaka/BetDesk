@@ -47,3 +47,18 @@ test('validateBet flags bad input', () => {
   assert.equal(validateBet({ key: 'A', impact: 1, p: 0.5, effort: 1 }).length, 0);
   assert.equal(validateBet({ key: '', impact: -1, p: 2, effort: 0 }).length, 4);
 });
+
+import { flagBet } from '../src/scoring.js';
+
+test('flagBet: overconfident large bet and long shot', () => {
+  const big = scoreBet({ key: 'A', impact: 10, p: 0.95, effort: 6 });
+  assert.deepEqual(flagBet(big).map((f) => f.code), ['overconfident']);
+  const shot = scoreBet({ key: 'B', impact: 10, p: 0.05, effort: 1 }, { lambda: 1 });
+  assert.deepEqual(flagBet(shot).map((f) => f.code), ['long-shot', 'negative-edge']);
+});
+
+test('flagBet: concentration in the funded portfolio', () => {
+  const r = allocate([{ key: 'A', impact: 10, p: 0.8, effort: 1 }, { key: 'B', impact: 2, p: 0.8, effort: 1 }], 5, { lambda: 0 });
+  const a = r.ranked.find((b) => b.key === 'A');
+  assert.ok(flagBet(a, r.portfolio).some((f) => f.code === 'concentration'));
+});

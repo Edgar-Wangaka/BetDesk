@@ -32,7 +32,7 @@ function row(b, estimated) {
     <td class="num">${estimated ? fmt(b.ev) : ''}</td>
     <td class="num">${estimated ? fmt(b.radj) : ''}</td>
     <td class="num">${estimated ? fmt(b.score, 2) : ''}</td>
-    <td>${estimated ? (b.funded ? '✅' : '—') : 'needs estimate'}</td>
+    <td>${estimated ? (b.funded ? '✅' : '—') : 'needs estimate'}${(b.flags || []).map((f) => ` <span class="flag" title="${esc(f.message)}">⚠ ${esc(f.code)}</span>`).join('')}${b.source === 'agent' ? ' <span class="flag" title="' + esc(b.rationale) + '">🤖 agent</span>' : ''}</td>
     <td><button class="secondary" data-save="${esc(b.key)}">Save</button></td>
   </tr>`;
 }

@@ -90,3 +90,25 @@ export function allocate(bets, capacity, { lambda = 0.5, step = 0.5 } = {}) {
     lambda,
   };
 }
+
+/**
+ * Estimate-quality flags, used by the UI and the Rovo agent.
+ * Heuristics, not verdicts: each flag names the estimate to challenge and why.
+ * `portfolio` is the result of allocate(); flags that need it are skipped when it is absent.
+ */
+export function flagBet(bet, portfolio) {
+  const flags = [];
+  if (bet.p >= 0.9 && bet.effort >= 4) {
+    flags.push({ code: 'overconfident', message: `p=${bet.p} on a ${bet.effort}-unit bet: large projects rarely land at 90%+.` });
+  }
+  if (bet.p <= 0.1) {
+    flags.push({ code: 'long-shot', message: `p=${bet.p}: a long shot, so check that the impact estimate justifies it.` });
+  }
+  if (Number.isFinite(bet.radj) && bet.radj <= 0) {
+    flags.push({ code: 'negative-edge', message: 'Risk-adjusted value is not positive at the current risk aversion: not worth funding.' });
+  }
+  if (portfolio && bet.funded && portfolio.ev > 0 && bet.ev / portfolio.ev > 0.5) {
+    flags.push({ code: 'concentration', message: `This bet carries ${Math.round((bet.ev / portfolio.ev) * 100)}% of the funded portfolio's EV.` });
+  }
+  return flags;
+}
