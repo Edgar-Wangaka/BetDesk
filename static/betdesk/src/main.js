@@ -2,7 +2,8 @@ import { invoke } from '@forge/bridge';
 
 const $ = (sel) => document.querySelector(sel);
 const fmt = (x, d = 1) => (Number.isFinite(x) ? x.toFixed(d) : '–');
-const pct = (x) => (Number.isFinite(x) ? `${Math.round(x * 100)}%` : '–');
+// Floor, not round: never display certainty that isn't there (0.996 shows as 99.6%, not 100%).
+const pct = (x) => (Number.isFinite(x) ? `${(Math.floor(x * 1000) / 10).toFixed(1)}%` : '–');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 function status(msg) { $('#status').textContent = msg || ''; }
