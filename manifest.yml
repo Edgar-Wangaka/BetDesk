@@ -1,0 +1,22 @@
+modules:
+  jira:projectPage:
+    - key: betdesk-project-page
+      resource: main
+      resolver:
+        function: resolver
+      title: Bet Desk
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: static/betdesk/build
+app:
+  runtime:
+    name: nodejs22.x
+  # Run `forge register` once to replace this with your real app id.
+  id: ari:cloud:ecosystem::app/00000000-0000-0000-0000-000000000000
+permissions:
+  scopes:
+    - read:jira-work
+    - storage:app

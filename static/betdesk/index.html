@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bet Desk</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Bet Desk</h1>
+      <p class="sub">Your roadmap as a portfolio of bets: fund the highest risk-adjusted value per unit of capacity.</p>
+    </header>
+
+    <section id="settings" class="card">
+      <label>Capacity (person-weeks) <input id="capacity" type="number" min="0.5" step="0.5" /></label>
+      <label>Risk aversion λ <input id="lambda" type="number" min="0" step="0.1" /></label>
+      <button id="save-settings">Re-allocate</button>
+    </section>
+
+    <section id="summary" class="card"></section>
+
+    <section class="card">
+      <h2>Bets</h2>
+      <table id="bets">
+        <thead>
+          <tr>
+            <th>Epic</th><th>Impact</th><th>P(success)</th><th>Effort</th>
+            <th>EV</th><th>Risk-adj.</th><th>Score</th><th>Funded</th><th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <p id="status" role="status"></p>
+    <script src="./main.js"></script>
+  </body>
+</html>
