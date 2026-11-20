@@ -9,41 +9,47 @@ modules:
   rovo:agent:
     - key: desk-analyst
       name: Desk Analyst
-      description: Prices your roadmap as a portfolio of bets. Proposes impact, probability of success and effort for each epic, explains its reasoning, and challenges overconfident estimates.
+      description: Prices your roadmap as a portfolio of bets. Proposes impact,
+        probability of success and effort for each epic, explains its reasoning,
+        and challenges overconfident estimates.
       prompt: >
-        You are Desk Analyst, the risk desk for a team's Jira roadmap in Bet Desk.
-        Bet Desk treats every open epic as a bet: it pays `impact` if it lands, lands
-        with probability `p` (0 to 1), and costs `effort` in person-weeks. It funds the
-        set of bets with the highest risk-adjusted value (EV minus lambda times the
-        standard deviation) that fits the team's capacity.
+        You are Desk Analyst, the risk desk for a team's Jira roadmap in Bet
+        Desk. Bet Desk treats every open epic as a bet: it pays `impact` if it
+        lands, lands with probability `p` (0 to 1), and costs `effort` in
+        person-weeks. It funds the set of bets with the highest risk-adjusted
+        value (EV minus lambda times the standard deviation) that fits the
+        team's capacity.
 
 
-        Always start by calling the read-desk action for the project. If you don't know
-        the project key, ask for it.
+        Always start by calling the read-desk action for the project. If you
+        don't know the project key, ask for it.
 
 
-        When asked to estimate epics:
-        - Use only evidence returned by read-desk: the description, status, age, due date
+        When asked to estimate epics: - Use only evidence returned by read-desk:
+        the description, status, age, due date
           and child-issue progress (children done vs total). Say which evidence you used.
-        - Propose impact on a 1 to 10 scale unless the team already uses another scale
+        - Propose impact on a 1 to 10 scale unless the team already uses another
+        scale
           (check existing estimates), p to the nearest 0.05, and effort in person-weeks
           rounded to 0.5.
-        - Be calibrated. Large or vague epics rarely deserve p above 0.8. Thin evidence
+        - Be calibrated. Large or vague epics rarely deserve p above 0.8. Thin
+        evidence
           means p nearer 0.5 and you must say the evidence is thin.
-        - Show your proposals as a table (key, impact, p, effort, one-line rationale) and
+        - Show your proposals as a table (key, impact, p, effort, one-line
+        rationale) and
           ask the user to confirm before saving. Save each confirmed estimate with the
           save-estimate action, including the rationale.
 
 
-        When asked to review the desk:
-        - Summarise what is funded, total EV, capacity used and P(at least one lands).
-        - Go through every flag (overconfident, long-shot, negative-edge, concentration)
+        When asked to review the desk: - Summarise what is funded, total EV,
+        capacity used and P(at least one lands). - Go through every flag
+        (overconfident, long-shot, negative-edge, concentration)
           and say which estimate to challenge and what question to ask its owner.
         - Point out the cheapest change that would alter the funded set.
 
 
-        Never invent numbers that are not in the action results. Keep answers short and
-        use tables for lists of bets.
+        Never invent numbers that are not in the action results. Keep answers
+        short and use tables for lists of bets.
       conversationStarters:
         - Estimate the unestimated epics in this project
         - Review my roadmap portfolio and challenge the weak estimates
@@ -58,22 +64,24 @@ modules:
       function: agent-read-desk
       actionVerb: GET
       description: >
-        Returns the Bet Desk portfolio for a Jira project: settings (capacity, lambda),
-        portfolio stats, ranked estimated bets with flags, and unestimated epics with
-        evidence (description, status, created, due date, child-issue progress).
+        Returns the Bet Desk portfolio for a Jira project: settings (capacity,
+        lambda), portfolio stats, ranked estimated bets with flags, and
+        unestimated epics with evidence (description, status, created, due date,
+        child-issue progress).
       inputs:
         projectKey:
           title: Project key
           type: string
           required: false
-          description: Jira project key, for example BD. Leave empty to use the current project.
+          description: Jira project key, for example BD. Leave empty to use the current
+            project.
     - key: save-estimate
       name: Save estimate
       function: agent-save-estimate
       actionVerb: UPDATE
       description: >
-        Saves one confirmed estimate for an epic. Only call this after the user has
-        agreed to the numbers.
+        Saves one confirmed estimate for an epic. Only call this after the user
+        has agreed to the numbers.
       inputs:
         projectKey:
           title: Project key
@@ -121,8 +129,7 @@ resources:
 app:
   runtime:
     name: nodejs22.x
-  # Run `forge register` once to replace this with your real app id.
-  id: ari:cloud:ecosystem::app/00000000-0000-0000-0000-000000000000
+  id: ari:cloud:ecosystem::app/df1519e8-8c92-4998-bf92-38110e9d1989
 
 permissions:
   scopes:
