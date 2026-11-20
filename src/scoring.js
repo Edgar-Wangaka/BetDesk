@@ -112,3 +112,25 @@ export function flagBet(bet, portfolio) {
   }
   return flags;
 }
+
+/**
+ * Efficient frontier: re-run the allocation across a sweep of risk aversion values and report
+ * the EV and σ of each funded portfolio. Shows the team what extra expected value each unit of
+ * risk buys, and where their current λ sits. Identical funded sets are merged (λ range kept).
+ */
+export function frontier(bets, capacity, { lambdas = [0, 0.25, 0.5, 0.75, 1, 1.5, 2, 3], current } = {}) {
+  const points = [];
+  for (const lambda of lambdas) {
+    const r = allocate(bets, capacity, { lambda });
+    const keys = r.funded.map((b) => b.key).sort().join(',');
+    const prev = points[points.length - 1];
+    if (prev && prev.keys === keys) { prev.lambdaMax = lambda; continue; }
+    points.push({ lambdaMin: lambda, lambdaMax: lambda, keys, count: r.funded.length, ev: r.portfolio.ev, sd: r.portfolio.sd });
+  }
+  if (Number.isFinite(current)) {
+    const r = allocate(bets, capacity, { lambda: current });
+    const keys = r.funded.map((b) => b.key).sort().join(',');
+    for (const pt of points) pt.current = pt.keys === keys;
+  }
+  return points;
+}

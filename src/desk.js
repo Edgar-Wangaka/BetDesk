@@ -1,21 +1,15 @@
 // Shared data access for the resolver (UI) and the Rovo agent actions.
 import api, { route } from '@forge/api';
 import { kvs } from '@forge/kvs';
-import { allocate, flagBet, validateBet } from './scoring.js';
+import { allocate, flagBet, validateBet, frontier } from './scoring.js';
+import { adfText, assertProjectKey } from './util.js';
 
 export const DEFAULT_SETTINGS = { capacity: 10, lambda: 0.5 };
 const betKey = (projectKey, issueKey) => `bet:${projectKey}:${issueKey}`;
 const settingsKey = (projectKey) => `settings:${projectKey}`;
 
-// Atlassian Document Format → plain text (enough for an agent to read a description).
-function adfText(node) {
-  if (!node) return '';
-  if (typeof node === 'string') return node;
-  if (node.type === 'text') return node.text || '';
-  return (node.content || []).map(adfText).join(node.type === 'paragraph' ? '\n' : ' ');
-}
-
 export async function fetchEpics(projectKey, { withDetail = false } = {}) {
+  assertProjectKey(projectKey);
   const jql = `project = "${projectKey}" AND issuetype = Epic AND statusCategory != Done ORDER BY rank`;
   const fields = withDetail ? 'summary,status,description,created,duedate' : 'summary,status';
   const res = await api.asUser().requestJira(route`/rest/api/3/search/jql?jql=${jql}&fields=${fields}&maxResults=100`);
@@ -35,6 +29,7 @@ export async function fetchEpics(projectKey, { withDetail = false } = {}) {
 
 // Child-issue progress gives the agent evidence for p and effort.
 export async function childProgress(epicKey) {
+  if (!/^[A-Z][A-Z0-9_]*-\d+$/.test(epicKey)) return null;
   const jql = `parent = "${epicKey}"`;
   const res = await api.asUser().requestJira(route`/rest/api/3/search/jql?jql=${jql}&fields=status&maxResults=200`);
   if (!res.ok) return null;
@@ -68,7 +63,9 @@ export async function getDesk(projectKey, { withDetail = false } = {}) {
   const [epics, settings] = await Promise.all([fetchEpics(projectKey, { withDetail }), getSettings(projectKey)]);
   const saved = await Promise.all(epics.map((e) => kvs.get(betKey(projectKey, e.key))));
   const bets = epics.map((e, i) => ({ ...e, ...(saved[i] || {}), estimated: Boolean(saved[i]) }));
-  const result = allocate(bets.filter((b) => b.estimated), settings.capacity, { lambda: settings.lambda });
+  const estimated = bets.filter((b) => b.estimated);
+  const result = allocate(estimated, settings.capacity, { lambda: settings.lambda });
   const ranked = result.ranked.map((b) => ({ ...b, flags: flagBet(b, result.portfolio) }));
-  return { projectKey, settings, ...result, ranked, unestimated: bets.filter((b) => !b.estimated) };
+  const curve = frontier(estimated, settings.capacity, { current: settings.lambda });
+  return { projectKey, settings, ...result, ranked, frontier: curve, unestimated: bets.filter((b) => !b.estimated) };
 }
