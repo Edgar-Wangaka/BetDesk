@@ -19,6 +19,8 @@ For each bet:
 
 Portfolio selection is a 0/1 knapsack on risk-adjusted value under the capacity limit (exact DP, effort discretised to 0.5). It beats ranking by score because it accounts for leftover capacity. Portfolio stats assume independent bets: total EV, portfolio σ = √Σσᵢ², and P(at least one lands) = 1 − Π(1 − pᵢ).
 
+**Efficient frontier.** The desk re-runs the allocation across a sweep of λ (0 to 3) and plots EV against σ for each distinct funded set, with the team's current λ highlighted. It shows how much expected value each extra unit of risk buys.
+
 ## Desk Analyst (Rovo agent)
 
 Open Rovo chat in Jira and pick **Desk Analyst**. It reads the desk, proposes impact / p / effort for unestimated epics from their description and child-issue progress, asks before saving, and challenges flagged estimates (overconfident, long shot, negative edge, concentration).
@@ -31,9 +33,10 @@ src/scoring.js             pure scoring + allocation engine (unit-tested)
 src/desk.js                shared data access: epics via JQL, estimates and settings in Forge KVS
 src/index.js               resolver for the UI
 src/agent.js               Rovo agent actions: read-desk, save-estimate
+src/util.js                pure helpers: ADF to text, project-key validation
 static/betdesk/            Custom UI: plain HTML/CSS/JS, bundled with esbuild
 scripts/build.mjs          UI build
-test/scoring.test.js       node:test unit tests
+test/*.test.js             node:test unit tests
 ```
 
 ## Run it

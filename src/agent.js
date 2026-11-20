@@ -1,8 +1,13 @@
 // Rovo agent actions for the Desk Analyst. Each action receives its inputs plus `context` in the payload.
-import { getDesk, saveBet, childProgress } from './desk.js';
+import { getDesk, saveBet, childProgress, fetchEpics } from './desk.js';
+import { isProjectKey } from './util.js';
 
-const projectFrom = (payload) =>
-  payload.projectKey || payload.context?.jira?.projectKey || payload.context?.jira?.project?.key;
+// The agent may pass a key typed by the user ("bd"), so normalise and validate it.
+const projectFrom = (payload) => {
+  const raw = payload.projectKey || payload.context?.jira?.projectKey || payload.context?.jira?.project?.key;
+  const key = typeof raw === 'string' ? raw.trim().toUpperCase() : raw;
+  return isProjectKey(key) ? key : null;
+};
 
 // Compact view of the desk for the agent: ranking, funded set, flags, and evidence for estimating.
 export async function readDesk(payload) {
@@ -33,8 +38,14 @@ export async function readDesk(payload) {
 export async function saveEstimate(payload) {
   const projectKey = projectFrom(payload);
   if (!projectKey) return { error: 'Ask the user which Jira project key to use.' };
+  // Only save onto an open epic in this project: stops the agent writing estimates for a mistyped key.
+  const epics = await fetchEpics(projectKey);
+  const issueKey = String(payload.issueKey || '').trim().toUpperCase();
+  if (!epics.some((e) => e.key === issueKey)) {
+    return { error: `${issueKey || 'That key'} is not an open epic in ${projectKey}. Call read-desk and use a key from it.` };
+  }
   const res = await saveBet(projectKey, {
-    key: payload.issueKey, impact: payload.impact, p: payload.p, effort: payload.effort,
+    key: issueKey, impact: payload.impact, p: payload.p, effort: payload.effort,
     rationale: payload.rationale, source: 'agent',
   });
   return res.ok ? { saved: res.bet } : { error: res.errors.join('; ') };
